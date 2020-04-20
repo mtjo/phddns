@@ -1,0 +1,26 @@
+#!/bin/sh
+
+request_handle()
+{
+	local netstat_log=$(netstat -anp | grep oray)
+	echo "netstat =============="
+	echo "$netstat_log"
+	local newph_log=$(tail -n 100 /var/log/phddns/oraynewph.log)
+	echo "oraynewph =============="
+	echo "$newph_log"
+	local core_log=$(tail -n 100 /var/log/phddns/core.log)
+	echo "phddns =============="
+	echo "$core_log"
+	return 0
+}
+
+
+
+case $1 in
+	request_handle)
+		request_handle "$2"
+		;;
+	*)
+		;;
+esac
+

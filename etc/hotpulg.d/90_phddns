@@ -1,0 +1,7 @@
+#!/bin/sh
+
+[ "$INTERFACE" == "wan" -a "$ACTION" == "ifup"  ] && {
+	/etc/init.d/oray_phddns restart
+					
+}
+

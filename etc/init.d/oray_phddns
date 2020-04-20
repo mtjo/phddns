@@ -1,0 +1,57 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=10
+
+USER_DATA="/tmp/oraysl.status"
+
+start() {
+	if [ ! -d "/var/log/phddns" ]; then
+		mkdir /var/log/phddns
+	fi
+
+	chmod 666 /var/log/phddns
+
+	if [ ! -z "$(pidof oraysl)" ]; then
+		kill -15 $(pidof oraysl) > /dev/null 2>&1
+	fi
+
+	/etc/oray_phddns/oraysl -a 127.0.0.1 -p 16062 -s phsle01.oray.net:6061 -l /var/log/phddns -L oraysl -f /etc/config/phddns -t /etc/config/phddns/init.status -i /tmp/oraysl.pid -u /tmp/oraysl.status -S /etc/config/phddns -d > /dev/null 2>&1
+
+	/etc/oray_phddns/oraynewph -s 0.0.0.0 -c /var/log/phddns/core.log -p /var/log/phddns -l oraynewph -f /etc/config/phddns -t /etc/config/phddns/init.status -i /tmp/oraynewph.pid -u /tmp/oraynewph.status -x -d > /dev/null 2>&1 
+
+	sleep 1
+
+	/etc/config/phddns/phdaemon &
+}
+
+stop() {
+
+	kill -9 $(pidof phdaemon) > /dev/null 2>&1
+	
+	oraysl=`ps | grep "oraysl" | grep -v 'grep' | awk '{print $1}'`
+
+	if [ ! -z "$oraysl" ]; then
+		kill -15 $oraysl >/dev/null 2>&1
+	fi
+
+	if [ ! -z "$(pidof oraysl)" ]; then
+		kill -9 $(pidof oraysl) > /dev/null 2>&1
+	fi
+
+	oraynewph=`ps  | grep "oraynewph" | grep -v 'grep' | awk '{print $1}'`
+	
+	if [ ! -z "$oraynewph" ]; then
+		kill -15 $oraynewph  >/dev/null 2>&1
+	fi
+
+	if [ ! -z "$(pidof oraynewph)" ]; then
+		kill -9 $(pidof oraynewph) > /dev/null 2>&1
+	fi
+}
+
+restart()
+{
+	stop
+	start
+}

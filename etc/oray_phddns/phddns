@@ -1,0 +1,101 @@
+#!/bin/sh
+
+USER_DATA="/tmp/oraysl.status"
+ORAYSL=`pidof oraysl`
+ORAYNEWPH=`pidof oraynewph`
+
+start()
+{
+	/etc/init.d/oray_phddns start
+	echo "start success"
+}
+
+stop()
+{
+	/etc/init.d/oray_phddns stop
+	echo "stop success"
+}
+
+restart()
+{
+	/etc/init.d/oray_phddns restart
+	echo "restart success"
+}
+
+reset()
+{
+	if [ -f "/etc/config/phddns/init.status" ]; then
+		rm -f /etc/config/phddns/init.status
+		rm -f /etc/config/phddns/PhMain.ini
+		/etc/init.d/oray_phddns restart
+		echo "reset success!"
+	else 
+		echo "device is not initialized"
+	fi  
+}
+
+disable()
+{
+	/etc/rc.common /etc/init.d/oray_phddns disable
+
+	echo "phddns now is disabled"
+}
+
+enable()
+{
+	/etc/rc.common /etc/init.d/oray_phddns enable
+
+	echo "phddns now is enabled"
+}
+
+status()
+{
+	if [ -n "$ORAYSL" ]; then
+		SN=`head -n 2 $USER_DATA  | tail -n 1 | cut -d= -f2-`;
+		STATUS=`head -n 3 $USER_DATA  | tail -n 1 | cut -d= -f2-`;
+        echo "+---------------------------------------------------+"
+        echo "|             Oray PeanutHull Linux 3.0             |"
+        echo "+---------------------------------------------------+"
+        echo "|              Runstatus:  $STATUS                   |"
+        echo "+---------------------------------------------------+"
+        echo "|              SN: $SN                 |"
+        echo "+---------------------------------------------------+"
+        echo "|    Remote Management Address http://b.oray.com    |"
+        echo "+---------------------------------------------------+"
+	else
+		echo "phddns service is not running"
+	fi
+
+}
+
+uninstall()
+{
+	cp /etc/oray_phddns/uninstall.sh /tmp/phuninstall.sh
+
+	chmod +x /tmp/phuninstall.sh
+	
+	/tmp/phuninstall.sh &
+}
+
+case "$1" in
+	"start")
+		start;;
+	"restart")
+		restart;;
+	"stop")
+		stop;;
+	"reset") 
+		reset;;
+	"disable")
+		disable;;
+	"enable")
+		enable;;
+	"status")
+		status;;	
+	"uninstall")
+		uninstall;;	
+	*)
+		echo "Usage: $0 (start|stop|restart|status|reset|enable|disable)"
+		;;
+esac
+
